@@ -27,9 +27,12 @@ private:
 
     const string filename = "data.dbf";
     const string filepath = "./";
-    void OpenFile(string filename) {
+    void OpenFile(string filename, bool write) {
         LOG_DEBUG("DataStorageMgr.OpenFile");
-        currFile = fopen((filepath + filename).c_str(), "wb+");
+        if (write)
+            currFile = fopen((filepath + filename).c_str(), "wb+");
+        else
+            currFile = fopen((filepath + filename).c_str(), "rb+");
         if (currFile == nullptr)
             FAIL;
     }
@@ -139,12 +142,12 @@ private:
     }
 
 public:
-    DataStorageMgr() {
+    DataStorageMgr(bool create_file = true) {
         currFile = nullptr;
         numPages = 0;
         io_cnt_total = 0;
         ClearContents();
-        OpenFile(filename);
+        OpenFile(filename, create_file);
     }
     ~DataStorageMgr() {
         LOG_DEBUG("DataStorageMgr.~DataStorageMgr");

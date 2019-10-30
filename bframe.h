@@ -5,7 +5,7 @@
 
 const int PAGE_SIZE = 4 * 1024;
 const int FRAME_SIZE = PAGE_SIZE;
-const int NUM_DATA = 50000;
+const int NUM_PAGE_TOTAL = 50000;
 
 struct bFrame {
     char field[FRAME_SIZE];
@@ -14,7 +14,7 @@ struct bFrame {
 
 // 打印出全局变量
 void print_config() {
-    printf("FRAME_SIZE = PAGE_SIZE: %d, NUM_DATA = %d\n", PAGE_SIZE, NUM_DATA);
+    printf("FRAME_SIZE = PAGE_SIZE: %d, NUM_DATA = %d\n", PAGE_SIZE, NUM_PAGE_TOTAL);
     fflush(stdout);
 }
 
