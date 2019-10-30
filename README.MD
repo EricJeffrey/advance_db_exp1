@@ -1,4 +1,5 @@
 # 高级数据库实验
+USTC高级数据库课程实验1，实现缓冲区管理与数据仓库管理接口。[课程链接](http://staff.ustc.edu.cn/~jpq/courses/adb-cs.html)，[实验链接](http://staff.ustc.edu.cn/~jpq/courses/lab_adb-cs.html)。
 
 ## 数据管理 ds_mgr
 - 上层为缓冲区管理提供数据操作接口
@@ -108,4 +109,4 @@
 ## 问题与解决
 - *fread莫名遇到eof，fseek、ftell都没问题*: 打开文件时指定`b`，即以二进制方式打开，如下为`fseek`相关信息  
   > For streams open in binary mode, the new position is defined by adding offset to a reference position specified by origin. For streams open in text mode, offset shall either be zero or a value returned by a previous call to ftell, and origin shall necessarily be SEEK_SET. 
-- 
+- *目录读取IO过多*: 重用内存中的目录
