@@ -1,0 +1,7 @@
+bin/
+.vscode/
+
+*.exe
+*.log
+*.txt
+*.out
