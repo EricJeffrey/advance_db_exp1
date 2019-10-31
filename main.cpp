@@ -5,16 +5,20 @@
 */
 
 #include "buffer_mgr.h"
-#include "ds_mgr.h"
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <set>
-#include <string>
 
 using std::set;
 
 extern const int NUM_PAGE_TOTAL;
+// checker
+auto check = [](const char *str, int x) -> bool {
+    char xstr[33] = {};
+    snprintf(xstr, sizeof(xstr), "%d", x);
+    for (int i = 0; xstr[i] != '\0'; i++)
+        if (str[i] != xstr[i])
+            return false;
+    return true;
+};
 
 // 生成一个随机的 bframe，其以 id 的字符串开始
 void generate_frame(bFrame &frame, int i) {
@@ -56,15 +60,6 @@ void test_ds_mgr_read() {
 
     bool const create_file = false;
     DataStorageMgr dsmgr(create_file);
-    // 检查 page 中内容的id位(前n位)是否与 x 一致
-    auto check = [](const char *str, int x) -> bool {
-        char xstr[33] = {};
-        snprintf(xstr, sizeof(xstr), "%d", x);
-        for (int i = 0; xstr[i] != '\0'; i++)
-            if (str[i] != xstr[i])
-                return false;
-        return true;
-    };
 
     const int times = 300;
     srand(time(NULL));
@@ -128,16 +123,6 @@ void test_ds_mgr_write() {
         dsmgr.WritePage(ids[i], frame);
     }
 
-    // 检查 str 的id位(前n位)是否与 x 一致
-    auto check = [](const char *str, int x) -> bool {
-        char xstr[33] = {};
-        snprintf(xstr, sizeof(xstr), "%d", x);
-        for (int i = 0; xstr[i] != '\0'; i++)
-            if (str[i] != xstr[i])
-                return false;
-        return true;
-    };
-
     // 读取数据
     int ok_cnt = 0;
     for (int i = 0; i < num_test_ids; i++) {
@@ -156,6 +141,7 @@ void test_ds_mgr_write() {
         }
     }
     printf("%d success, %d failed.\n", ok_cnt, num_test_ids - ok_cnt);
+    printf("total io: %d\n", dsmgr.GetTotalIO());
     for (int i = 0; i < num_test_ids; i++) {
         bFrame frame = bFrame();
         char tmp_str[33] = {};
@@ -164,19 +150,59 @@ void test_ds_mgr_write() {
             frame.field[j] = tmp_str[j];
         dsmgr.WritePage(ids[i], frame);
     }
+    printf("total io(after rewrite): %d\n", dsmgr.GetTotalIO());
+}
+
+// 测试 buffermgr 读取数据的正确性
+void test_buf_mgr_fix() {
+    // 使用 buffermgr 的 fixpage 读取 page
+    // 随机生成300个id，调用 fixpage 读取 frameid，检查得到的 id 正确性
+
+    LOG_DEBUG("test_buf_mgr_read");
+    const int num_ids = 300;
+    int ids[num_ids] = {};
+    auto gene_ids = [](int ids[], int num_ids) -> void {
+        srand(time(NULL));
+        for (int i = 0; i < num_ids; i++)
+            ids[i] = rand() % NUM_PAGE_TOTAL;
+    };
+    gene_ids(ids, num_ids);
+
+    DataStorageMgr dsmgr = DataStorageMgr(false);
+    BufferMgr buffermgr = BufferMgr(&dsmgr);
+    int ok_cnt = 0;
+    for (int i = 0; i < num_ids; i++) {
+        bFrame *res_frame = buffermgr.GetFrame(buffermgr.FixPage(ids[i], 0));
+        res_frame->field[10] = '\0';
+        printf("No.%d,\tpage_id: %d,\tframe_read: %s,\tstatus: ", i + 1, ids[i], res_frame->field);
+        if (check(res_frame->field, ids[i])) {
+            ok_cnt += 1;
+            printf("1\n");
+        } else {
+            printf("0\n");
+        }
+    }
+    printf("%d success, %d failed\n", ok_cnt, num_ids - ok_cnt);
+}
+
+// todo 继续测试缓冲区管理
+
+void init() {
+    printf("FRAME_SIZE = PAGE_SIZE: %d, NUM_DATA = %d\n", PAGE_SIZE, NUM_PAGE_TOTAL);
+
+    printf("stderr >> log.out\n");
+    printf("stdout >> data.out\n");
+    freopen("./log.out", "w", stderr);
+    freopen("./data.out", "w", stdout);
+    fflush(stdout);
 }
 
 int main(int argc, char const *argv[]) {
-    print_config();
-    printf("stderr >> log.out\n");
-    printf("stdout >> data.out\n");
-
-    freopen("./log.out", "w", stderr);
-
+    init();
     // test_ds_mgr_write_new();
     // test_ds_mgr_read();
-    freopen("./data.out", "a+", stdout);
-    test_ds_mgr_write();
+    // test_ds_mgr_write();
+    test_buf_mgr_fix();
 
     return 0;
 }

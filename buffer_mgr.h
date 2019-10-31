@@ -12,20 +12,6 @@ using std::unordered_map;
 
 #define BUFFER_MAX_SIZE 1024
 
-struct BCB {
-    int page_id;
-    int frame_id;
-    int count;
-    bool dirty;
-    int next_frame_id, prev_frame_id;
-
-    BCB() { page_id = frame_id = next_frame_id = prev_frame_id - 1, count = 0, dirty = false; }
-    void update(int pid, int fid, int cnt, bool dirty) {
-        LOG_DEBUG("BCB.update");
-        page_id = pid, frame_id = fid, count = cnt, this->dirty = dirty;
-    }
-};
-
 class BufferMgr {
 private:
     unordered_map<int, int> page2frame;
@@ -33,7 +19,7 @@ private:
 
     BCB bcbs[BUFFER_MAX_SIZE];
 
-    bFrame buffer[BUFFER_MAX_SIZE];
+    bFrame *buffer;
     int head_fid, taile_fid, size;
 
     DataStorageMgr *ds_mgr;
@@ -108,8 +94,11 @@ public:
         head_fid = taile_fid = -1;
         size = 0;
         this->ds_mgr = ds_mgr;
+        buffer = new bFrame[BUFFER_MAX_SIZE];
     }
     ~BufferMgr() {
+        LOG_DEBUG("~BufferMgr");
+        delete[] buffer;
     }
     // 读取page_id的内容，返回frame_id
     int FixPage(int page_id, int prot) {
@@ -186,6 +175,9 @@ public:
             do_insert ? LRUInsert(target_fid) : LRUUpdate(target_fid);
             do_insert ? size += 1 : 0;
         }
+    }
+    bFrame *GetFrame(int frame_id) {
+        return buffer + frame_id;
     }
 
     // count减一
