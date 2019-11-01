@@ -42,7 +42,7 @@ private:
             FAIL;
     }
     void Seek(int offset) {
-        LOG_DEBUG("DataStorageMgr.Seek");
+        LOG_DEBUG("DataStorageMgr.Seek, offset", offset);
         int ret = fseek(currFile, offset, SEEK_SET);
         if (ret != 0 || ferror(currFile))
             FAIL;
@@ -82,12 +82,7 @@ private:
         // if (io_cnt_total % 100 == 0)
         //     fflush(currFile);
     }
-    // 更新目录标号与偏移量
-    void UpdateContents(int index, int offset) {
-        cur_content_id = index;
-        cur_content_offset = offset;
-    }
-    // 清空目录
+    // 清空目录，重置目录信息
     void ClearContents() {
         memset(contents, 0, sizeof(contents));
         cur_content_id = -1;
@@ -111,9 +106,9 @@ private:
         cur_content_id = index;
         cur_content_offset = offset;
     }
-    // 跳过[num_skip]个目录节点，最终[contents]中是第 [num_skip+1] 个目录，返回最终目录的offset
+    // 跳过[num_skip]个目录节点，最终[contents]中是第 [num_skip] 个目录，返回最终目录的offset
     int SkipContent(int num_skip) {
-        LOG_DEBUG("DataStorageMgr.SkipContent");
+        LOG_DEBUG("DataStorageMgr.SkipContent, num_skip", num_skip);
         // 可以直接利用当前已经读取的
         if (cur_content_id == num_skip) {
             LOG_DEBUG("use content in memory directly");
@@ -123,7 +118,7 @@ private:
         int i = 0;
         // 利用已存的目录信息
         if (cur_content_id != -1 && cur_content_id < num_skip) {
-            LOG_DEBUG("reuse content in memory");
+            LOG_DEBUG("reuse content in memory, cur_content_id", cur_content_id);
             cont_off = contents[CONTENT_MAX_SIZE - 1];
             i = cur_content_id + 1;
         }
@@ -155,7 +150,7 @@ public:
     }
     // 读取某个页
     int ReadPage(int page_id, bFrame &frame) {
-        LOG_DEBUG("DataStorageMgr.ReadPage");
+        LOG_DEBUG("DataStorageMgr.ReadPage, page_id", page_id);
         int num_skip = page_id / PAGE_NUM_IN_CONTENT;
         SkipContent(num_skip);
         int target_offset = contents[page_id % PAGE_NUM_IN_CONTENT];
@@ -165,7 +160,7 @@ public:
     }
     // 更新某个页，页page_id一定存在，对于新加入的页，调用 [WriteNewPage]
     int WritePage(int page_id, bFrame &frame) {
-        LOG_DEBUG("DataStorageMgr.WritePage");
+        LOG_DEBUG("DataStorageMgr.WritePage, page_id", page_id);
         int num_skip = page_id / PAGE_NUM_IN_CONTENT;
         SkipContent(num_skip);
         int target_offset = contents[page_id % PAGE_NUM_IN_CONTENT];

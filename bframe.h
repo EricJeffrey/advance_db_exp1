@@ -9,7 +9,7 @@ const int FRAME_SIZE = PAGE_SIZE;
 const int NUM_PAGE_TOTAL = 50000;
 
 struct bFrame {
-    char field[FRAME_SIZE];
+    char field[FRAME_SIZE] = {};
     int size = FRAME_SIZE;
 };
 struct BCB {

@@ -20,10 +20,13 @@
         exit(EXIT_FAILURE);                                                               \
     } while (0)
 
-#define LOG_DEBUG(A)                               \
-    do {                                           \
-        if (LOG_DEBUG_ON)                          \
-            fprintf(stderr, "LOG_DEBUG: %s\n", A); \
-    } while (0)
+void LOG_DEBUG(const char *str) {
+    if (LOG_DEBUG_ON)
+        fprintf(stderr, "%s\n", str);
+}
+void LOG_DEBUG(const char *str, int arg) {
+    if (LOG_DEBUG_ON)
+        fprintf(stderr, "%s: %d\n", str, arg);
+}
 
 #endif // LOGGER_H

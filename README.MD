@@ -1,7 +1,9 @@
 # 高级数据库实验
 USTC高级数据库课程实验1，实现缓冲区管理与数据仓库管理接口。[课程链接](http://staff.ustc.edu.cn/~jpq/courses/adb-cs.html)，[实验链接](http://staff.ustc.edu.cn/~jpq/courses/lab_adb-cs.html)。
 
-## 数据管理 ds_mgr
+## 功能描述
+
+### 数据管理 ds_mgr
 - 上层为缓冲区管理提供数据操作接口
 - 下层为操作系统文件系统
 - 外部接口
@@ -12,6 +14,23 @@ USTC高级数据库课程实验1，实现缓冲区管理与数据仓库管理接
 - 内部接口
   - 读取目录
 
+### 缓冲区管理 buffer_mgr
+- 上层为记录查询提供增删改查功能
+- 下层调用数据管理接口的功能
+- 外部接口
+  - 读取某个page内容
+  - 更新某个page内容
+  - 增加一个新page
+  - 获取可用frame数目
+- 内部接口
+  - 根据淘汰算法选择受害者
+  - 设置/取消设置一个页为脏页
+  - 将所有脏页写入磁盘
+  - 打印一个frame的内容
+  - 根据LRU算法更新一个缓冲块
+  - 根据LRU算法插入一个新的缓冲块
+
+## 数据结构设计
 ### ds_mgr 数据结构设计
 页大小为8KB，使用一页作为目录，存储`N=(8*1024/4)=2*1024`个页地址和下一个目录表的地址。其中页地址与目录表地址为偏移量，使用整数(4Byte)表示。
 
@@ -19,6 +38,16 @@ USTC高级数据库课程实验1，实现缓冲区管理与数据仓库管理接
 - 页数: numpages
 - 目录表: contents -> int[]
 
+### buffer_mgr 数据结构设计
+- 缓冲区: buffer[]
+- 缓冲区大小: size
+- 链表首/尾: head_frame_id, tail_frame_id
+- frame->page: frame2page[] 数组
+- page->frame: page2frame[] 哈希表
+- 缓冲块信息(链表节点): bcb[] -> { frame_id, page_id, dirty, count, prev_frame_id, next_frame_id }
+  - 链表结构与哈希表结合
+
+## 流程设计
 ### ds_mgr 流程设计
 每个目录能够索引x个页
 - 读一个页p
@@ -45,25 +74,6 @@ USTC高级数据库课程实验1，实现缓冲区管理与数据仓库管理接
     - 更新目录，写入磁盘
     - 将新页写入磁盘
   - 增加numpages
-
-
-
-## 缓冲区管理 buffer_mgr
-- 上层为记录查询提供增删改查功能
-- 下层调用数据管理接口的功能
-- 外部接口
-  - 读取某个page内容
-  - 更新某个page内容
-  - 增加一个新page
-  - 获取可用frame数目
-- 内部接口
-  - 根据淘汰算法选择受害者
-  - 设置/取消设置一个页为脏页
-  - 将所有脏页写入磁盘
-  - 打印一个frame的内容
-  - 根据LRU算法更新一个缓冲块
-  - 根据LRU算法插入一个新的缓冲块
-
 
 ### buffer_mgr 流程
 - 读page
@@ -96,15 +106,6 @@ USTC高级数据库课程实验1，实现缓冲区管理与数据仓库管理接
     - 更新数据
     - 设置为dirty
     - LRU更新
-
-### buffer_mgr 数据结构设计
-- 缓冲区: buffer[]
-- 缓冲区大小: size
-- 链表首/尾: head_frame_id, tail_frame_id
-- frame->page: frame2page[] 数组
-- page->frame: page2frame[] 哈希表
-- 缓冲块信息(链表节点): bcb[] -> { frame_id, page_id, dirty, count, prev_frame_id, next_frame_id }
-
 
 ## 问题与解决
 - *fread莫名遇到eof，fseek、ftell都没问题*: 打开文件时指定`b`，即以二进制方式打开，如下为`fseek`相关信息  
