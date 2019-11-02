@@ -10,7 +10,8 @@ USTC高级数据库课程实验1，实现缓冲区管理与数据仓库管理接
   - 初始化相关文件信息
   - 读取一个page
   - 写入一个新page
-  - 获取页数
+  - 更新一个page
+  - 获取页数、IO总数
 - 内部接口
   - 读取目录
 
@@ -21,6 +22,11 @@ USTC高级数据库课程实验1，实现缓冲区管理与数据仓库管理接
   - 读取某个page内容
   - 更新某个page内容
   - 增加一个新page
+  - 获取某个frame
+  - 获取命中率
+  - 获取IO总数
+  - 获取LRU头、尾信息
+  - 将所有脏页写入磁盘
   - 获取可用frame数目
 - 内部接口
   - 根据淘汰算法选择受害者
@@ -112,3 +118,4 @@ USTC高级数据库课程实验1，实现缓冲区管理与数据仓库管理接
   > For streams open in binary mode, the new position is defined by adding offset to a reference position specified by origin. For streams open in text mode, offset shall either be zero or a value returned by a previous call to ftell, and origin shall necessarily be SEEK_SET. 
 - *目录读取IO过多*: 重用内存中的目录
 - *vscode莫名抛出 无法打开....cygwin.s*: 由于栈内数组开的过大，造成了调试器启动失败！！！
+- *文件太大，偏移量无法使用int存下*: gcc的 -D_FILE_OFFSET_BITS=64 能够将off_t定义为64位的，因此使用`off_t`作为偏移量的类型之后使用该选项编译运行即可

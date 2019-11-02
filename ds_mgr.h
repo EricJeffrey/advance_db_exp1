@@ -1,8 +1,8 @@
 #if !defined(DS_MGR_H)
 #define DS_MGR_H
 
-#include "bframe.h"
 #include "buffer_mgr.h"
+#include "header.h"
 #include "logger.h"
 #include <cstdio>
 #include <cstdlib>
@@ -19,14 +19,15 @@ class DataStorageMgr {
 private:
     FILE *currFile;
     int numPages;
-    unsigned int io_cnt_total;
+    long long io_cnt_total;
 
     int cur_content_id;
-    int cur_content_offset;
-    int contents[CONTENT_MAX_SIZE];
+    off_t cur_content_offset;
+    off_t contents[CONTENT_MAX_SIZE];
 
     const string filename = "data.dbf";
     const string filepath = "./";
+
     void OpenFile(string filename, bool write) {
         LOG_DEBUG("DataStorageMgr.OpenFile");
         if (write)
@@ -41,7 +42,7 @@ private:
         if (fclose(currFile) == -1)
             FAIL;
     }
-    void Seek(int offset) {
+    void Seek(off_t offset) {
         LOG_DEBUG("DataStorageMgr.Seek, offset", offset);
         int ret = fseek(currFile, offset, SEEK_SET);
         if (ret != 0 || ferror(currFile))
@@ -62,7 +63,7 @@ private:
         }
         if (feof(fp))
             FAILARG("fread eof");
-        if (ret < cnt)
+        if (ret < (int)cnt)
             FAILARG("ret < cnt");
         IncIOCnt();
     }
@@ -76,7 +77,7 @@ private:
         }
         if (feof(fp))
             FAILARG("fread eof");
-        if (ret < cnt)
+        if (ret < (int)cnt)
             FAILARG("ret < cnt");
         IncIOCnt();
         // if (io_cnt_total % 100 == 0)
@@ -90,7 +91,7 @@ private:
     }
     // 读取目录，seek到offset并读取一个目录到 contents[] 中，第一个目录的 offset=0
     // index: 当前目录在目录链表中的序号
-    void ReadContent(int offset, int index) {
+    void ReadContent(off_t offset, int index) {
         LOG_DEBUG("DataStorageMgr.ReadContent");
         Seek(offset);
         ClearContents();
@@ -99,7 +100,7 @@ private:
         cur_content_offset = offset;
     }
     // 更新目录, seek到offset并将目录写入磁盘
-    void WriteContent(int offset, int index) {
+    void WriteContent(off_t offset, int index) {
         LOG_DEBUG("DataStorageMgr.WriteContent");
         Seek(offset);
         FWrite(contents, 1, sizeof(contents), currFile);
@@ -107,14 +108,14 @@ private:
         cur_content_offset = offset;
     }
     // 跳过[num_skip]个目录节点，最终[contents]中是第 [num_skip] 个目录，返回最终目录的offset
-    int SkipContent(int num_skip) {
+    off_t SkipContent(int num_skip) {
         LOG_DEBUG("DataStorageMgr.SkipContent, num_skip", num_skip);
         // 可以直接利用当前已经读取的
         if (cur_content_id == num_skip) {
             LOG_DEBUG("use content in memory directly");
             return cur_content_offset;
         }
-        int cont_off = 0;
+        off_t cont_off = 0;
         int i = 0;
         // 利用已存的目录信息
         if (cur_content_id != -1 && cur_content_id < num_skip) {
@@ -153,7 +154,7 @@ public:
         LOG_DEBUG("DataStorageMgr.ReadPage, page_id", page_id);
         int num_skip = page_id / PAGE_NUM_IN_CONTENT;
         SkipContent(num_skip);
-        int target_offset = contents[page_id % PAGE_NUM_IN_CONTENT];
+        off_t target_offset = contents[page_id % PAGE_NUM_IN_CONTENT];
         Seek(target_offset);
         FRead(frame.field, 1, FRAME_SIZE, currFile);
         return 0;
@@ -163,7 +164,7 @@ public:
         LOG_DEBUG("DataStorageMgr.WritePage, page_id", page_id);
         int num_skip = page_id / PAGE_NUM_IN_CONTENT;
         SkipContent(num_skip);
-        int target_offset = contents[page_id % PAGE_NUM_IN_CONTENT];
+        off_t target_offset = contents[page_id % PAGE_NUM_IN_CONTENT];
         Seek(target_offset);
         FWrite(frame.field, 1, FRAME_SIZE, currFile);
         return 0;
@@ -174,7 +175,7 @@ public:
         if (numPages == 0) {
             LOG_DEBUG("numpages == 0");
             ClearContents();
-            const int target_offset = sizeof(contents);
+            const off_t target_offset = sizeof(contents);
             contents[0] = target_offset;
             WriteContent(0, 0);
             Seek(target_offset);
@@ -188,21 +189,21 @@ public:
         // 需要新建目录
         if (target_index == 0) {
             num_skip -= 1;
-            int cont_offset = SkipContent(num_skip);
-            int new_content_offset = contents[PAGE_NUM_IN_CONTENT - 1] + PAGE_SIZE;
+            off_t cont_offset = SkipContent(num_skip);
+            off_t new_content_offset = contents[PAGE_NUM_IN_CONTENT - 1] + PAGE_SIZE;
             // 更新最后一个目录的 next
             contents[CONTENT_MAX_SIZE - 1] = new_content_offset;
             WriteContent(cont_offset, num_skip);
             // 建立新目录，更新内容并写到磁盘
             ClearContents();
-            int new_page_offset = new_content_offset + sizeof(contents);
+            off_t new_page_offset = new_content_offset + sizeof(contents);
             contents[0] = new_page_offset;
             WriteContent(new_content_offset, num_skip + 1);
             Seek(new_page_offset);
             FWrite(frame.field, 1, FRAME_SIZE, currFile);
         } else {
-            int cont_offset = SkipContent(num_skip);
-            int target_offset = contents[target_index - 1] + PAGE_SIZE;
+            off_t cont_offset = SkipContent(num_skip);
+            off_t target_offset = contents[target_index - 1] + PAGE_SIZE;
             contents[target_index] = target_offset;
             WriteContent(cont_offset, num_skip);
             Seek(target_offset);
@@ -221,7 +222,7 @@ public:
     }
 
     // ???
-    void SetUse(int index, int use_bit) {}
+    void SetUse(int index, int use_bit) { return; }
     int GetUse(int index) { return 0; }
 };
 

@@ -1,9 +1,7 @@
 #if !defined(BUFFER_MGR_H)
 #define BUFFER_MGR_H
 
-#include "bframe.h"
 #include "ds_mgr.h"
-#include "logger.h"
 #include <algorithm>
 #include <cstring>
 #include <string>
@@ -106,6 +104,8 @@ public:
         size = 0;
         this->ds_mgr = ds_mgr;
         buffer = new bFrame[BUFFER_MAX_SIZE];
+
+        hit_num = tot_page_update_num = 0;
     }
     ~BufferMgr() {
         LOG_DEBUG("~BufferMgr");
@@ -116,11 +116,13 @@ public:
         LOG_DEBUG("BufferMgr.FixPage, page_id", page_id);
         IncTotPageUpdateNum();
         if (page2frame.find(page_id) != page2frame.end()) { // 在缓冲区
+            printf("HIT!\t");
             IncHitNum();
             return page2frame[page_id];
         }
+            printf("\t\t");
         // 不在缓冲区
-        int target_fid = size + 1, ret = 0;
+        int target_fid = size + 1;
         bool do_insert = false; // 确定执行更新还是插入操作
 
         if (size >= BUFFER_MAX_SIZE) { // 缓冲区满
@@ -137,7 +139,7 @@ public:
         bFrame tmp_frame;
         ReadPage(page_id, tmp_frame);
         // 写数据到缓冲区，更新 BCB 和 LRU
-        memcpy(buffer + target_fid, tmp_frame.field, FRAME_SIZE);
+        tmp_frame.set_field(buffer[target_fid]);
         bcbs[target_fid].update(page_id, target_fid, 0, false);
         do_insert ? LRUInsert(target_fid) : LRUUpdate(target_fid);
         do_insert ? size += 1 : 0;
@@ -157,6 +159,7 @@ public:
         LOG_DEBUG("BufferMgr.UpdatePage, page_id", page_id);
         IncTotPageUpdateNum();
         if (page2frame.find(page_id) != page2frame.end()) { // 在缓冲区
+            printf("HIT!\t");
             IncHitNum();
             int tmp_frm_id = page2frame[page_id];
             buffer[tmp_frm_id] = frame;
@@ -164,6 +167,7 @@ public:
             LRUUpdate(tmp_frm_id);
             return;
         } else { // 不在缓冲区
+            printf("\t\t");
             int target_fid = -1, ret = 0;
             bool do_insert = false;
             if (size == BUFFER_MAX_SIZE) { // 缓冲区满
@@ -202,10 +206,10 @@ public:
     }
     // 获取命中率
     double GetHitRate() {
-        return hit_num / (double)tot_page_update_num;
+        return tot_page_update_num == 0 ? -1 : hit_num / (double)tot_page_update_num;
     }
     // 获取IO总次数
-    int GetIONumTot() {
+    long long GetIONumTot() {
         return ds_mgr->GetTotalIO();
     }
     // 获取 LRU 链表中头部的三个与尾部的三个 page
@@ -226,7 +230,7 @@ public:
         }
         std::reverse(ids.begin() + 3, ids.end());
         string res;
-        for (int i = 0; i < ids.size(); i++) {
+        for (size_t i = 0; i < ids.size(); i++) {
             res += to_string(ids[i]) + "\t";
         }
         return res;

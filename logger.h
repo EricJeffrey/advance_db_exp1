@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-#define LOG_DEBUG_ON 1
+#define LOG_DEBUG_ON 0
 
 #define FAIL                                                                  \
     do {                                                                      \

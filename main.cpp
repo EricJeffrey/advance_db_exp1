@@ -34,7 +34,10 @@ void init() {
 }
 
 // 初始化所有记录
-void ds_init(BufferMgr &buffmgr) {
+void ds_init() {
+    const bool create_file = true;
+    DataStorageMgr dsmgr = DataStorageMgr(create_file);
+    BufferMgr buffmgr(&dsmgr);
     bFrame tmpframe;
     ha("Start Writing Data Into Pages");
     for (int i = 0; i < NUM_PAGE_TOTAL; i++) {
@@ -46,7 +49,10 @@ void ds_init(BufferMgr &buffmgr) {
     ha("Data Written, Start Job");
 }
 // 执行任务
-void start(BufferMgr &buffermgr) {
+void start() {
+    const bool create_file = false;
+    DataStorageMgr dsmgr = DataStorageMgr(create_file);
+    BufferMgr buffermgr(&dsmgr);
     ha("Start Reading Command Data");
     // 读取数据到内存
     FILE *in_fp = fopen("./data.in", "r+");
@@ -67,13 +73,13 @@ void start(BufferMgr &buffermgr) {
     ha("Command Data Read, Start Processing");
     // 处理读写命令，每次都输出命中率
     bFrame tmpframe;
-    for (int i = 0; i < cmds.size(); i++) {
+    for (size_t i = 0; i < cmds.size(); i++) {
         memset(tmpframe.field, 0, sizeof(tmpframe.field));
         int tmpcmd = cmds[i].first;
         int tmppageid = cmds[i].second;
-        printf("No.%d,\tJob:\t%s,\t", i + 1, (tmpcmd ? "W" : "R"));
+        printf("No.%d,\t", i + 1);
         // 读
-        if (tmpcmd == 0) 
+        if (tmpcmd == 0)
             buffermgr.FixPage(tmppageid, 0);
         // 写
         if (tmpcmd == 1) {
@@ -81,7 +87,7 @@ void start(BufferMgr &buffermgr) {
                 tmpframe.field[j] = '|';
             buffermgr.UpdatePage(tmppageid, tmpframe);
         }
-        printf("hit_rate:\t%.2f\n", buffermgr.GetHitRate());
+        printf("hit_rate:\t%.6f\ttotal_io_cnt: %lld\n", buffermgr.GetHitRate(), buffermgr.GetIONumTot());
     }
     buffermgr.WriteDirtys();
     ha("Processing Over, Job Done!");
@@ -90,11 +96,9 @@ void start(BufferMgr &buffermgr) {
 int main(int argc, char const *argv[]) {
     init();
     // 写入数据
-    const bool create_file = true;
-    DataStorageMgr dsmgr = DataStorageMgr(create_file);
-    BufferMgr buffmgr = BufferMgr(&dsmgr);
-    ds_init(buffmgr);
-    start(buffmgr);
+    ds_init();
+    // 执行任务
+    start();
 
     return 0;
 }
