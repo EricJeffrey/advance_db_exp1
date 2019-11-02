@@ -119,3 +119,82 @@ USTC高级数据库课程实验1，实现缓冲区管理与数据仓库管理接
 - *目录读取IO过多*: 重用内存中的目录
 - *vscode莫名抛出 无法打开....cygwin.s*: 由于栈内数组开的过大，造成了调试器启动失败！！！
 - *文件太大，偏移量无法使用int存下*: gcc的 -D_FILE_OFFSET_BITS=64 能够将off_t定义为64位的，因此使用`off_t`作为偏移量的类型之后使用该选项编译运行即可
+
+## 结果展示（部分）
+
+部分输出，`HIT`表示命中缓存，`hit_rate`为命中率，`total_io_cnt`为总IO次数
+```txt
+No.1,			hit_rate:	0.000000	total_io_cnt: 10
+No.2,			hit_rate:	0.000000	total_io_cnt: 15
+...
+No.12,	HIT!	hit_rate:	0.083333	total_io_cnt: 83
+No.13,			hit_rate:	0.076923	total_io_cnt: 91
+...
+...
+No.980,	HIT!	hit_rate:	0.222449	total_io_cnt: 7077
+No.981,			hit_rate:	0.222222	total_io_cnt: 7112
+No.982,			hit_rate:	0.221996	total_io_cnt: 7114
+No.983,			hit_rate:	0.221770	total_io_cnt: 7118
+No.984,	HIT!	hit_rate:	0.222561	total_io_cnt: 7118
+No.985,			hit_rate:	0.222335	total_io_cnt: 7120
+No.986,	HIT!	hit_rate:	0.223124	total_io_cnt: 7120
+No.987,			hit_rate:	0.222898	total_io_cnt: 7125
+No.988,			hit_rate:	0.222672	total_io_cnt: 7128
+No.989,			hit_rate:	0.222447	total_io_cnt: 7130
+No.990,	HIT!	hit_rate:	0.223232	total_io_cnt: 7130
+...
+...
+...
+No.9988,	HIT!	hit_rate:	0.441830	total_io_cnt: 91181
+No.9989,	HIT!	hit_rate:	0.441886	total_io_cnt: 91181
+No.9990,			hit_rate:	0.441842	total_io_cnt: 91237
+No.9991,	HIT!	hit_rate:	0.441898	total_io_cnt: 91237
+No.9992,	HIT!	hit_rate:	0.441954	total_io_cnt: 91237
+No.9993,	HIT!	hit_rate:	0.442009	total_io_cnt: 91237
+No.9994,			hit_rate:	0.441965	total_io_cnt: 91258
+No.9995,	HIT!	hit_rate:	0.442021	total_io_cnt: 91258
+No.9996,	HIT!	hit_rate:	0.442077	total_io_cnt: 91258
+No.9997,	HIT!	hit_rate:	0.442133	total_io_cnt: 91258
+No.9998,			hit_rate:	0.442088	total_io_cnt: 91262
+No.9999,	HIT!	hit_rate:	0.442144	total_io_cnt: 91262
+No.10000,	HIT!	hit_rate:	0.442200	total_io_cnt: 91262
+No.10001,			hit_rate:	0.442156	total_io_cnt: 91274
+...
+...
+...
+No.29999,	HIT!	hit_rate:	0.577953	total_io_cnt: 255186
+No.30000,	HIT!	hit_rate:	0.577967	total_io_cnt: 255186
+No.30001,	HIT!	hit_rate:	0.577981	total_io_cnt: 255186
+No.30002,	HIT!	hit_rate:	0.577995	total_io_cnt: 255186
+No.30003,	HIT!	hit_rate:	0.578009	total_io_cnt: 255186
+No.30004,			hit_rate:	0.577990	total_io_cnt: 255198
+No.30005,	HIT!	hit_rate:	0.578004	total_io_cnt: 255198
+No.30006,	HIT!	hit_rate:	0.578018	total_io_cnt: 255198
+....
+.....
+......
+No.299986,	HIT!	hit_rate:	0.858920	total_io_cnt: 1197880
+No.299987,	HIT!	hit_rate:	0.858921	total_io_cnt: 1197880
+No.299988,	HIT!	hit_rate:	0.858921	total_io_cnt: 1197880
+No.299989,	HIT!	hit_rate:	0.858921	total_io_cnt: 1197880
+No.299990,	HIT!	hit_rate:	0.858922	total_io_cnt: 1197880
+....
+.....
+......
+.......
+No.499988,	HIT!	hit_rate:	0.905952	total_io_cnt: 1383506
+No.499989,	HIT!	hit_rate:	0.905952	total_io_cnt: 1383506
+No.499990,	HIT!	hit_rate:	0.905952	total_io_cnt: 1383506
+No.499991,	HIT!	hit_rate:	0.905952	total_io_cnt: 1383506
+No.499992,	HIT!	hit_rate:	0.905952	total_io_cnt: 1383506
+No.499993,	HIT!	hit_rate:	0.905953	total_io_cnt: 1383506
+No.499994,	HIT!	hit_rate:	0.905953	total_io_cnt: 1383506
+No.499995,	HIT!	hit_rate:	0.905953	total_io_cnt: 1383506
+No.499996,	HIT!	hit_rate:	0.905953	total_io_cnt: 1383506
+No.499997,	HIT!	hit_rate:	0.905953	total_io_cnt: 1383506
+No.499998,	HIT!	hit_rate:	0.905954	total_io_cnt: 1383506
+No.499999,	HIT!	hit_rate:	0.905954	total_io_cnt: 1383506
+Processing Over, Job Done!
+
+
+```
