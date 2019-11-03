@@ -1,4 +1,3 @@
-bin/
 .vscode/
 
 *.dbf
@@ -6,4 +5,5 @@ bin/
 *.log
 *.txt
 *.out
+*.in
 *.s
