@@ -1,5 +1,5 @@
 # 高级数据库实验
-USTC高级数据库课程实验1，实现缓冲区管理与数据仓库管理接口。[课程链接](http://staff.ustc.edu.cn/~jpq/courses/adb-cs.html)，[实验链接](http://staff.ustc.edu.cn/~jpq/courses/lab_adb-cs.html)。
+USTC高级数据库课程实验1，实现缓冲区管理与数据仓库管理接口。[课程链接](http://staff.ustc.edu.cn/~jpq/courses/adb-cs.html)，[实验链接](http://staff.ustc.edu.cn/~jpq/courses/lab_adb-cs.html), [最终说明文档](Document.MD)。
 
 ## 功能描述
 
