@@ -220,6 +220,13 @@ public:
         LOG_DEBUG("DataStorageMgr.GetTotalIO");
         return io_cnt_total;
     }
+    // ftell
+    long Ftell() {
+        LOG_DEBUG("DataStorageMgr.Ftell");
+        long ret = ftell(currFile);
+        if (ret == -1L) FAILARG("ftell");
+        return ret;
+    }
 
     // ???
     void SetUse(int index, int use_bit) { return; }

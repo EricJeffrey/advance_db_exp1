@@ -18,6 +18,7 @@ using std::vector;
 extern const int NUM_PAGE_TOTAL;
 extern const int PAGE_SIZE;
 extern const int FRAME_SIZE;
+extern bool LOG_DEBUG_ON;
 
 auto ha = [](const char *str) -> void {
     printf("%s\n", str);
@@ -25,6 +26,7 @@ auto ha = [](const char *str) -> void {
 
 // 打印初始化配置信息，重定向IO
 void init() {
+    LOG_DEBUG_ON = true;
     printf("FRAME_SIZE = PAGE_SIZE: %d, NUM_DATA = %d\n", PAGE_SIZE, NUM_PAGE_TOTAL);
     printf("stderr >> log.out\n");
     printf("stdout >> data.out\n");
@@ -77,7 +79,6 @@ void start() {
         memset(tmpframe.field, 0, sizeof(tmpframe.field));
         int tmpcmd = cmds[i].first;
         int tmppageid = cmds[i].second;
-        printf("No.%d,\t", i + 1);
         // 读
         if (tmpcmd == 0)
             buffermgr.FixPage(tmppageid, 0);
@@ -87,7 +88,7 @@ void start() {
                 tmpframe.field[j] = '|';
             buffermgr.UpdatePage(tmppageid, tmpframe);
         }
-        printf("hit_rate:\t%.6f\ttotal_io_cnt: %lld\n", buffermgr.GetHitRate(), buffermgr.GetIONumTot());
+        printf("%.6f,%ld\n", buffermgr.GetHitRate(), buffermgr.GetIONumTot());
     }
     buffermgr.WriteDirtys();
     ha("Processing Over, Job Done!");
@@ -95,10 +96,15 @@ void start() {
 
 int main(int argc, char const *argv[]) {
     init();
-    // 写入数据
-    ds_init();
-    // 执行任务
-    start();
+    bool do_test = false;
+    if (do_test) {
+        Tester().do_test();
+    } else {
+        // 写入数据
+        ds_init();
+        // 执行任务
+        start();
+    }
 
     return 0;
 }

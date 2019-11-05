@@ -120,7 +120,7 @@ public:
             IncHitNum();
             return page2frame[page_id];
         }
-            printf("\t\t");
+        printf("\t\t");
         // 不在缓冲区
         int target_fid = size + 1;
         bool do_insert = false; // 确定执行更新还是插入操作
@@ -209,7 +209,7 @@ public:
         return tot_page_update_num == 0 ? -1 : hit_num / (double)tot_page_update_num;
     }
     // 获取IO总次数
-    long long GetIONumTot() {
+    long GetIONumTot() {
         return ds_mgr->GetTotalIO();
     }
     // 获取 LRU 链表中头部的三个与尾部的三个 page

@@ -7,7 +7,7 @@
 
 const int PAGE_SIZE = 4 * 1024;
 const int FRAME_SIZE = PAGE_SIZE;
-const int NUM_PAGE_TOTAL = 50000;
+const int NUM_PAGE_TOTAL = 50001;
 
 struct bFrame {
     char field[FRAME_SIZE] = {};

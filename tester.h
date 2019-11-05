@@ -210,13 +210,26 @@ private:
             bufmgr.UpdatePage(ids[i], frame);
         }
     }
+    // 测试写入50000个页，文件的偏移量
+    void test_file_offset() {
+        DataStorageMgr dsmgr = DataStorageMgr(true);
+        bFrame frame;
+        for (int i = 0; i < 50000; i++) {
+            memset(&frame.field, 0, sizeof(frame.field));
+            for (int j = 0; j < FRAME_SIZE; j++) {
+                frame.field[j] = 'a';
+            }
+            dsmgr.WriteNewPage(frame);
+            printf("No.%d\t,ftell:%ld\n", i + 1, dsmgr.Ftell());
+        }
+    }
 
 public:
     Tester() {}
     ~Tester() {}
     void do_test() {
         // write test here
-        test_buf_mgr_update();
+        test_file_offset();
     }
 };
 

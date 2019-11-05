@@ -22,8 +22,10 @@ def read_data():
 
 
 x, y_hitrate, y_totalio = read_data()
+plt.title("Hit Rate Curve")
 plt.plot(x, y_hitrate)
 plt.show()
 
+plt.title("IO Count Curve")
 plt.plot(x, y_totalio)
 plt.show()
